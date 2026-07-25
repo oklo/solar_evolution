@@ -61,3 +61,11 @@ png/
 # --- OS / editor / harness ---
 .DS_Store
 .claude/
+
+# --- LaTeX build intermediates (keep .tex and .pdf) ---
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.bbl
+paper/*.blg
+paper/*.synctex.gz

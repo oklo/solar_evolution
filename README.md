@@ -68,7 +68,7 @@ solar_system_future/
   orbit_cloud.py         osculating-orbit point clouds for the animation
   crosscheck.py          secular-vs-N-body validation near the RGB tip
   bench_whfast.py        WHFast timing benchmark
-paper/ms.tex             the ApJ-style manuscript
+paper/ms.tex             the ApJ-formatted working paper
 media/                   sun_future.mp4 + poster frame
 requirements.txt         Python dependencies
 ```
