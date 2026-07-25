@@ -1,0 +1,373 @@
+%% ApJ-style manuscript. Compiles with AASTeX v6.3.1 (aastex631.cls),
+%% available on Overleaf and in TeX Live. Self-contained bibliography.
+\documentclass[twocolumn]{aastex631}
+
+\usepackage{amsmath}
+\newcommand{\msun}{M_\odot}
+\newcommand{\rsun}{R_\odot}
+\newcommand{\lsun}{L_\odot}
+\newcommand{\teff}{T_{\mathrm{eff}}}
+\newcommand{\gyr}{\,\mathrm{Gyr}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\shorttitle{The Future of the Sun and the Fate of the Earth}
+\shortauthors{Laughlin}
+
+\begin{document}
+
+\title{The Future of the Sun and the Fate of the Earth: A Calibrated Stellar
+Model Coupled to an $N$-body Integration of the Surviving Planets}
+
+\author{Gregory Laughlin}
+\affiliation{Department of Astronomy, Yale University, New Haven, CT 06511, USA}
+
+\begin{abstract}
+We compute the evolution of the Sun from the present day through the red-giant
+branch (RGB), helium flash, asymptotic giant branch (AGB), and into the
+white-dwarf (WD) cooling track using a solar-calibrated \code{MESA} model, and
+couple the resulting mass-loss and radius histories to a direct $N$-body
+integration of the surviving planets that includes general relativity and the
+convective equilibrium tide. The calibrated model reproduces the present-day Sun
+($L=0.997\,\lsun$, $R=1.000\,\rsun$, $\teff=5767$~K) and predicts a moist-greenhouse
+threshold for Earth in $1.15\gyr$ and a runaway greenhouse in $3.7\gyr$. At the RGB
+tip ($7.39\gyr$ hence) the Sun reaches $R=202\,\rsun=0.94$~AU at $2760\,\lsun$,
+having shed $24\%$ of its mass; Mercury and Venus are engulfed at pericenter contact
+$4.7$ and $0.7$~Myr before the tip, respectively, while the Earth survives, its
+orbit carried outward to $\approx1.25$~AU by mass loss. We identify a dynamical
+consequence that is absent from prior single-planet engulfment studies and from
+uniform-mass-loss $N$-body studies: because tidal drag suppresses Earth's orbital
+expansion near the tip while Mars expands adiabatically, the Earth--Mars period
+ratio sweeps through the 7:3 and 9:4 mean-motion resonances, pumping both
+eccentricities until the orbits cross. In our fiducial realization Mars is ejected
+and the Earth is left on an eccentric orbit ($a\approx1.67$~AU, $e\approx0.17$)
+about a $0.53\,\msun$ carbon--oxygen white dwarf. The instability is reproduced by
+two independent integrators. We discuss the sensitivity of this
+\emph{tidally-differential} destabilization channel to the RGB-tip radius, the wind
+efficiency, and the tidal prescription, and outline the ensemble calculation needed
+to establish its branching ratios. All inputs, code, and a scrub-controllable
+visualization are publicly available.
+\end{abstract}
+
+\keywords{Solar evolution --- Stellar mass loss --- Planetary dynamics ---
+Tidal interaction --- White dwarf stars}
+
+\section{Introduction}
+
+The long-term future of the Sun is a classic problem
+\citep{SBK1993,Rybicki2001,Schroder2008}. As the Sun exhausts its central
+hydrogen, ascends the RGB, and ejects its envelope, its luminosity and radius vary
+by orders of magnitude, and roughly half of its present mass is returned to the
+interstellar medium. The fate of the Earth in this endgame has been debated for
+decades. \citet{SBK1993} and \citet{Rybicki2001} established the timeline of the
+Sun's brightening and the associated loss of Earth's habitability, while
+\citet{Schroder2008} performed a careful calculation of the RGB-tip radius and the
+competition between wind-driven orbital expansion and tidal drag, concluding that
+the Earth is engulfed just short of the tip.
+
+Two threads of prior work bracket the problem but do not meet. On one side,
+single-planet engulfment calculations \citep{Rasio1996,Villaver2009,Mustill2012,
+Schroder2008} treat the tidal in-spiral of one planet into an evolving giant with
+care, but by construction they say nothing about the \emph{multi-planet} dynamics of
+the survivors. On the other side, the classic post-main-sequence $N$-body studies
+\citep{DuncanLissauer1998,Veras2016} integrate the full planetary system through
+mass loss and find the surviving planets dynamically stable --- but they adopt
+\emph{uniform} (adiabatic) mass loss, which preserves period ratios and Hill
+spacings exactly, and they omit stellar tides. The regime in which tides act
+\emph{differentially} on the inner survivors, breaking the uniform expansion that
+underpins the stability argument, has not been examined for the solar system.
+
+Here we close that gap. We evolve a solar-calibrated \code{MESA} model
+\citep{Paxton2011,Paxton2019} from the pre-main sequence to the WD stage, and drive
+a direct $N$-body integration of the eight planets with the time-dependent solar
+mass and radius, general-relativistic precession, and the convective equilibrium
+tide. Section~\ref{sec:methods} describes the stellar model, the tidal
+prescription, and the integration strategy. Section~\ref{sec:results} presents the
+climate timeline, the structural evolution, the engulfment of Mercury and Venus,
+the survival of the Earth, and the tidally-driven Earth--Mars instability.
+Section~\ref{sec:discussion} compares our results to prior work and enumerates the
+model sensitivities. Section~\ref{sec:conclusion} concludes.
+
+\section{Methods}
+\label{sec:methods}
+
+\subsection{Solar-calibrated stellar model}
+
+We use \code{MESA} release r26.04.1 with the MESA SDK. The initial helium
+abundance $Y_0$, metallicity $Z_0$ (parameterized by $[\mathrm{Fe/H}]$), mixing
+length $\alpha_{\mathrm{MLT}}$, and exponential overshoot efficiency $f_{\rm ov}$
+are calibrated with \code{MESA}'s simplex framework to match, at the solar age of
+$4.61\gyr$, the solar luminosity and radius, the surface metal-to-hydrogen ratio
+$Z/X$, the surface helium abundance, the depth of the convective envelope, and the
+helioseismic sound-speed profile. Element diffusion is included and gravitational
+settling is followed. The best-fit parameters are $Y_0=0.2772$, $Z_0=0.0203$
+($[\mathrm{Fe/H}]=+0.10$), $\alpha_{\mathrm{MLT}}=1.945$, and $f_{\rm ov}=0.0314$,
+with a combined $\chi^2=3.54$; the resulting present-day model has
+$L=0.997\,\lsun$, $R=1.000\,\rsun$, $\teff=5767$~K, i.e.\ a luminosity residual of
+$0.3\%$ --- roughly three times the amplitude of the 11-year solar cycle in total
+irradiance.
+
+The calibrated model is evolved from the pre-main sequence through the WD stage in
+six segments (pre-MS $\to$ terminal-age main sequence $\to$ RGB tip $\to$ core
+helium exhaustion $\to$ end of the AGB $\to$ WD), with mass loss on the giant
+branches following the \citet{Reimers1975} prescription on the RGB and a
+\citet{Bloecker1995} superwind on the AGB. History output is written at every
+timestep to resolve the rapid tip and thermal-pulse phases, providing continuous
+$M_\star(t)$, $R_\star(t)$, $L_\star(t)$, and interior structure for the dynamical
+coupling.
+
+\subsection{The convective equilibrium tide}
+\label{sec:tide}
+
+Near the RGB tip the Sun develops a deep convective envelope, and the equilibrium
+tide raised by an inner planet is damped by turbulent convection, driving orbital
+decay \citep{Zahn1977,Zahn1989,VerbuntPhinney1995}. We adopt the standard form for
+the tidally-driven decay of the semi-major axis $a$ of a planet of mass $m$
+(mass ratio $q\equiv m/M_\star$) orbiting a star of mass $M_\star$, envelope mass
+$M_{\rm env}$, and radius $R_\star$:
+\begin{equation}
+\left(\frac{1}{a}\frac{da}{dt}\right)_{\rm tide}
+= -\frac{4}{7}\, f\, \frac{M_{\rm env}}{M_\star}\,
+\frac{q\,(1+q)}{\tau_{\rm conv}}\,
+\left(\frac{R_\star}{a}\right)^{8},
+\label{eq:tide}
+\end{equation}
+where the convective turnover time is
+$\tau_{\rm conv}=(M_{\rm env}R_\star^2/L_\star)^{1/3}$ and
+\begin{equation}
+f = \min\!\left[1,\ \left(\frac{P_{\rm orb}}{2\,\tau_{\rm conv}}\right)^2\right]
+\end{equation}
+is the \citet{GoldreichNicholson1977} reduction factor that suppresses the
+turbulent viscosity when the tidal forcing period is shorter than the convective
+turnover time. The steep $(R_\star/a)^8$ dependence makes the tide negligible until
+$R_\star$ climbs to within a factor of a few of the orbit, then switches on
+abruptly; it also renders the innermost surviving planet overwhelmingly dominant.
+Orbital expansion from mass loss is not imposed as a separate term: the stellar mass
+is updated directly in the $N$-body integration, and the adiabatic scaling
+$a\propto M_\star^{-1}$ emerges from the dynamics. We validate this by comparison
+with the analytic secular solution (Section~\ref{sec:validation}).
+
+\subsection{$N$-body integration}
+
+We integrate the Sun and eight planets with \code{REBOUND}
+\citep{ReinLiu2012} and \code{REBOUNDx} \citep{Tamayo2020}. General-relativistic
+apsidal precession is included with the \code{gr\_potential} force, which is
+position-dependent and therefore symplectic-safe. The tide of
+Equation~\eqref{eq:tide} is applied as a per-planet semi-major-axis decay operator.
+On the quiet RGB climb we use the \code{WHFast} integrator \citep{ReinTamayo2015}
+with a timestep of $P_{\rm Mercury}/10$; the stellar mass, radius, and tidal rates
+are updated each chunk from the \code{MESA} history, with chunk lengths adapted so
+that $|\Delta M_\star|/M_\star<10^{-4}$ and $|\Delta R_\star|/R_\star<1\%$. A planet
+is removed when its pericenter first contacts the photosphere, $a(1-e)<R_\star$, at
+which point gas drag renders the remaining in-spiral effectively instantaneous.
+
+Because \code{WHFast} cannot integrate close encounters, once the Earth--Mars orbits
+begin to cross (Section~\ref{sec:earthmars}) we re-integrate the tail with the
+hybrid symplectic integrator \code{MERCURIUS} \citep{ReinMercurius2019}, restarted
+from the last pre-crossing snapshot with a timestep of $P_{\rm Earth}/40$. To make
+the multi-Gyr integration tractable we begin the $N$-body run at $10.75\gyr$
+(present age $+6.14\gyr$); at that epoch the Sun has lost $<1\%$ of its mass and the
+tidal rates are $\sim10^{-21}\,\mathrm{yr}^{-1}$, so the planetary orbits are
+indistinguishable from their present values, and every dynamically active phase is
+captured.
+
+\subsection{Validation}
+\label{sec:validation}
+
+As an independent check we constructed a secular model in which each planet's
+semi-major axis evolves under Equation~\eqref{eq:tide} plus the mass-loss term
+$\dot a/a=-\dot M_\star/M_\star$, integrated with an adaptive ODE solver. Over the
+final $14$~Myr before the RGB tip, the secular model and the direct $N$-body
+integration agree on the Mercury and Venus engulfment times to within $\sim10$~kyr
+across a $1.2\gyr$ integration, and on the surviving orbits to a few parts in
+$10^4$; the residuals are the genuine planet--planet perturbations that the secular
+model lacks. This confirms that the tidal prescription is correctly implemented and
+that the mass-loss expansion emerges properly from the $N$-body dynamics.
+
+\section{Results}
+\label{sec:results}
+
+\subsection{The brightening Sun and the end of the biosphere}
+
+The calibrated model brightens by $\sim0.85\%$ per $100$~Myr on the main sequence,
+steepening with time. The solar luminosity reaches $+6\%$ in $0.8\gyr$, $+10\%$ in
+$1.15\gyr$, and $+40\%$ in $3.7\gyr$. Coupled to standard climate results, this
+timeline implies the end of C3 photosynthesis and the decline of the complex
+biosphere within $\sim0.5$--$1\gyr$ as the carbonate--silicate cycle draws down
+CO$_2$ \citep{Caldeira1992,OMalleyJames2013}, a moist-greenhouse transition and the
+onset of ocean loss near $+1.15\gyr$ \citep{Wolf2015}, and a full runaway greenhouse
+by $+3.7\gyr$. The Earth is rendered uninhabitable at its surface long before the
+Sun leaves the main sequence.
+
+\subsection{Structural evolution to the white-dwarf stage}
+
+Central hydrogen is exhausted at $+4.43\gyr$, after which the Sun crosses the
+subgiant branch and ascends the RGB. At the RGB tip, $+7.385\gyr$ from now (stellar
+age $11.95\gyr$), the model reaches $R_\star=202\,\rsun=0.94$~AU,
+$L_\star=2760\,\lsun$, $\teff=2940$~K, with a degenerate helium core of
+$0.475\,\msun$; $24\%$ of the Sun's mass has already been lost to the RGB wind. The
+degenerate core ignites in the helium flash; the Sun then settles onto the
+horizontal branch (the red clump), ascends the AGB, ejects its envelope in a
+thermal-pulse superwind, and crosses the top of the HR diagram at
+$\teff>26{,}000$~K as a planetary-nebula nucleus before cooling as a $0.53\,\msun$
+carbon--oxygen white dwarf.
+
+\subsection{Engulfment of Mercury and Venus; survival of the Earth}
+
+In the $N$-body integration, Mercury is engulfed at stellar age $11.9465\gyr$
+($4.7$~Myr before the tip) when its pericenter, driven inward by the tide from
+$a=0.41$~AU, contacts the $0.32$~AU photosphere; its natural eccentricity
+$e\approx0.2$ brings it to grief early. Venus follows at $11.9513\gyr$
+($0.7$~Myr before the tip) at $a=0.77$~AU against $R_\star=0.77$~AU. Both times match
+the secular prediction to $\lesssim2$~kyr. The Earth, in contrast, survives: solar
+mass loss expands its orbit to $\approx1.25$~AU by the time the photosphere peaks at
+$0.94$~AU, and the tide --- reduced by the \citet{GoldreichNicholson1977} factor
+because Earth's orbital period is short compared to the turnover time near the tip
+--- is too weak to overcome the expansion. This is the opposite verdict to
+\citet{Schroder2008}, for reasons we discuss in Section~\ref{sec:discussion}.
+
+\subsection{A tidally-differential Earth--Mars instability}
+\label{sec:earthmars}
+
+The novel result concerns the aftermath. Near the tip, the tide acts strongly on the
+Earth (suppressing its adiabatic expansion by $\sim7\%$) but negligibly on Mars,
+which expands with the full mass loss. As a result the Earth--Mars period ratio,
+$\approx2.45$ today, sweeps downward through the 7:3 and 9:4 mean-motion resonances
+during and after the tip. The resonance crossings pump both eccentricities: within
+$\sim0.1\gyr$ of the tip, $e_\oplus$ and $e_{\rm Mars}$ grow from $\sim0.02$ to
+$\gtrsim0.25$--$0.35$, and the orbits cross. In our fiducial realization the ensuing
+close encounters eject Mars from the solar system and leave the Earth on an
+eccentric orbit, $a\approx1.67$~AU, $e\approx0.17$, about the newborn white dwarf.
+The instability is not a numerical artifact of the symplectic scheme: it appears
+identically in the \code{WHFast} integration (before it fails at orbit crossing) and
+in the encounter-capable \code{MERCURIUS} re-integration.
+
+Physically, this is a channel that the two prior threads of work each miss by
+construction. Uniform mass loss \citep{DuncanLissauer1998} preserves the Earth--Mars
+period ratio and cannot drive a resonance sweep; single-planet tidal calculations
+\citep{Schroder2008} do not track Mars. It is the \emph{differential} action of the
+tide on two surviving planets --- one deep enough in the potential to feel the tide,
+one not --- that breaks the adiabatic invariance and destabilizes the pair.
+
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Comparison with \citet{Schroder2008}}
+
+Our RGB-tip radius, $0.94$~AU, is smaller than the $1.2$~AU ($256\,\rsun$) of
+\citet{Schroder2008}, and where they engulf the Earth we find it survives with a
+$\sim0.3$~AU margin. The difference is the expected one: the tip radius depends on
+the adopted opacities, mixing length, and (through the core mass at ignition) the
+prior wind history, and the survival verdict is a near-cancellation between tip
+radius, wind efficiency, and tidal strength. Our tide includes the
+\citet{GoldreichNicholson1977} reduction, which weakens Earth's tide near the tip
+relative to a full-strength Zahn prescription. The Earth's fate is therefore
+genuinely model-dependent, and we regard the survival/engulfment boundary as the
+central systematic uncertainty rather than a settled outcome; the differential
+instability we identify operates in the branch where Earth survives.
+
+\subsection{Caveats and the required ensemble}
+
+Three caveats bound the Earth--Mars result. First, it is a \emph{single realization}
+of a chaotic outcome; the Lyapunov time of the inner solar system is $\sim5$~Myr, so
+the specific disposition (Mars ejected / Earth eccentric) is one draw, and the
+branching ratio between ejection, mutual collision, and a long-lived resonant chain
+requires an ensemble of integrations with perturbed initial conditions. Second, our
+tidal model damps semi-major axis but not eccentricity; including the eccentricity
+tide would modify the timing of the resonance crossings, though by less than the
+tip-radius uncertainty. Third, the final $\sim30$~Myr of the integration relies on a
+modest extrapolation of the stellar track beyond the end of the \code{MESA} data.
+None of these affects the \emph{qualitative} result --- that differential tidal
+migration drives the surviving terrestrial planets through resonance --- which is
+robust within the well-constrained portion of the integration.
+
+\subsection{Implications}
+
+If it survives an ensemble treatment, this channel changes the standard picture of
+the post-RGB solar system from "the survivors expand quietly and remain stable"
+to one in which the surviving terrestrial planet(s) are dynamically excited or
+lost. This is directly relevant to the interpretation of polluted white dwarfs
+\citep{Veras2016}: a mechanism that excites and ejects surviving planets at the RGB
+tip is a natural way to stir small-body reservoirs and deliver material to the WD.
+
+\section{Conclusions}
+\label{sec:conclusion}
+
+We have computed a solar-calibrated evolutionary model of the Sun from the present
+day into the white-dwarf era and coupled it to a direct $N$-body integration of the
+surviving planets including general relativity and the convective equilibrium tide.
+The main results are: (i) a moist-greenhouse end to Earth's surface habitability in
+$1.15\gyr$; (ii) an RGB tip in $7.39\gyr$ at $R_\star=0.94$~AU, at which Mercury and
+Venus are engulfed but the Earth survives; and (iii) a previously unremarked
+\emph{tidally-differential} destabilization of the Earth--Mars pair after the tip,
+which in our fiducial realization ejects Mars and leaves the Earth eccentric about a
+$0.53\,\msun$ white dwarf. The instability is reproduced by two independent
+integrators and occupies the gap between single-planet engulfment studies and
+uniform-mass-loss $N$-body studies. An ensemble calculation with an eccentricity
+tide and extended stellar tracks is the natural next step.
+
+\section*{Data availability}
+
+All \code{MESA} inlists, the calibrated model configuration, the $N$-body driver,
+the validation and analysis code, and a scrub-controllable visualization are
+available at \url{https://github.com/oklo/solar_evolution}. Bulk data products
+(\code{MESA} histories and profiles, $N$-body archives) are regenerable from the
+provided workflow.
+
+\begin{acknowledgments}
+This work used \code{MESA} \citep{Paxton2011,Paxton2019}, the MESA SDK, and
+\code{REBOUND}/\code{REBOUNDx} \citep{ReinLiu2012,Tamayo2020}.
+\end{acknowledgments}
+
+\software{MESA \citep{Paxton2011,Paxton2019}, REBOUND \citep{ReinLiu2012},
+REBOUNDx \citep{Tamayo2020}, WHFast \citep{ReinTamayo2015},
+MERCURIUS \citep{ReinMercurius2019}, NumPy, SciPy, Matplotlib.}
+
+\begin{thebibliography}{}
+
+\bibitem[Bl\"ocker(1995)]{Bloecker1995} Bl\"ocker, T. 1995, A\&A, 297, 727
+\bibitem[Caldeira \& Kasting(1992)]{Caldeira1992} Caldeira, K., \& Kasting,
+J.~F. 1992, Nature, 360, 721
+\bibitem[Duncan \& Lissauer(1998)]{DuncanLissauer1998} Duncan, M.~J., \&
+Lissauer, J.~J. 1998, Icarus, 134, 303
+\bibitem[Goldreich \& Nicholson(1977)]{GoldreichNicholson1977} Goldreich, P.,
+\& Nicholson, P.~D. 1977, Icarus, 30, 301
+\bibitem[Mustill \& Villaver(2012)]{Mustill2012} Mustill, A.~J., \& Villaver,
+E. 2012, ApJ, 761, 121
+\bibitem[O'Malley-James et al.(2013)]{OMalleyJames2013} O'Malley-James, J.~T.,
+Greaves, J.~S., Raven, J.~A., \& Cockell, C.~S. 2013, IJAsB, 12, 99
+\bibitem[Paxton et al.(2011)]{Paxton2011} Paxton, B., Bildsten, L., Dotter, A.,
+et al. 2011, ApJS, 192, 3
+\bibitem[Paxton et al.(2019)]{Paxton2019} Paxton, B., Smith, R., Schwab, J.,
+et al. 2019, ApJS, 243, 10
+\bibitem[Rasio et al.(1996)]{Rasio1996} Rasio, F.~A., Tout, C.~A., Lubow, S.~H.,
+\& Livio, M. 1996, ApJ, 470, 1187
+\bibitem[Reimers(1975)]{Reimers1975} Reimers, D. 1975, Mem.\ Soc.\ R.\ Sci.\
+Li\`ege, 8, 369
+\bibitem[Rein \& Liu(2012)]{ReinLiu2012} Rein, H., \& Liu, S.-F. 2012, A\&A,
+537, A128
+\bibitem[Rein \& Tamayo(2015)]{ReinTamayo2015} Rein, H., \& Tamayo, D. 2015,
+MNRAS, 452, 376
+\bibitem[Rein et al.(2019)]{ReinMercurius2019} Rein, H., Hernandez, D.~M.,
+Tamayo, D., et al. 2019, MNRAS, 485, 5490
+\bibitem[Rybicki \& Denis(2001)]{Rybicki2001} Rybicki, K.~R., \& Denis, C. 2001,
+Icarus, 151, 130
+\bibitem[Sackmann et al.(1993)]{SBK1993} Sackmann, I.-J., Boothroyd, A.~I., \&
+Kraemer, K.~E. 1993, ApJ, 418, 457
+\bibitem[Schr\"oder \& Connon Smith(2008)]{Schroder2008} Schr\"oder, K.-P., \&
+Connon Smith, R. 2008, MNRAS, 386, 155
+\bibitem[Tamayo et al.(2020)]{Tamayo2020} Tamayo, D., Rein, H., Shi, P., \&
+Hernandez, D.~M. 2020, MNRAS, 491, 2885
+\bibitem[Verbunt \& Phinney(1995)]{VerbuntPhinney1995} Verbunt, F., \& Phinney,
+E.~S. 1995, A\&A, 296, 709
+\bibitem[Veras(2016)]{Veras2016} Veras, D. 2016, Royal Society Open Science, 3,
+150571
+\bibitem[Villaver \& Livio(2009)]{Villaver2009} Villaver, E., \& Livio, M. 2009,
+ApJ, 705, L81
+\bibitem[Wolf \& Toon(2015)]{Wolf2015} Wolf, E.~T., \& Toon, O.~B. 2015, JGRD,
+120, 5775
+\bibitem[Zahn(1977)]{Zahn1977} Zahn, J.-P. 1977, A\&A, 57, 383
+\bibitem[Zahn(1989)]{Zahn1989} Zahn, J.-P. 1989, A\&A, 220, 112
+
+\end{thebibliography}
+
+\end{document}

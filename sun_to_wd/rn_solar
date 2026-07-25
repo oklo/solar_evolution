@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Standalone version of the test-suite rn script (no testhub bookkeeping).
+# Runs the full 1 Msun evolution: pre-MS -> WD.
+set -e
+
+do_one() {
+    local inlist_file=$1 model_out=$2 logs_dir=$3
+    echo "=============================================================="
+    echo "PART: ${inlist_file}   ($(date '+%Y-%m-%d %H:%M:%S'))"
+    echo "=============================================================="
+    cp "${inlist_file}" inlist
+    rm -f restart_photo
+    ./star
+    if [ ! -r "${model_out}" ]; then
+        echo "FAILED: ${model_out} was not created by ${inlist_file}"
+        exit 1
+    fi
+    rm -rf "${logs_dir}"
+    mv LOGS "${logs_dir}"
+    echo "finished ${inlist_file}"
+}
+
+do_one inlist_start_header                 start.mod               LOGS_start
+do_one inlist_to_end_core_h_burn_header    end_core_h_burn.mod     LOGS_to_end_core_h_burn
+do_one inlist_to_start_he_core_flash_header start_he_core_flash.mod LOGS_to_start_he_core_flash
+do_one inlist_to_end_core_he_burn_header   end_core_he_burn.mod    LOGS_to_end_core_he_burn
+do_one inlist_to_end_agb_header            end_agb.mod             LOGS_to_end_agb
+do_one inlist_to_wd_header                 final.mod               LOGS_to_wd
+
+echo "ALL PARTS FINISHED: the Sun is now a white dwarf. ($(date '+%Y-%m-%d %H:%M:%S'))"

@@ -1,0 +1,57 @@
+! Calibrated solar physics, shared by all six phases.
+! Values from simplex_solar_calibration shipped best-fit (chi^2 = 3.54 on our build):
+!   Y0 = 0.2772395386, Z0 = 0.0202595089 (FeH = +0.0996), alpha = 1.9446893445,
+!   f_ov = 0.0314081331 (exponential, f0 = f_ov), GS98/OP opacities, diffusion.
+
+&kap
+      Zbase = 0.0202595089d0
+      kap_file_prefix = 'OP_gs98'
+/ ! end of kap namelist
+
+&controls
+
+      initial_mass = 1.0d0
+      initial_y = 0.2772395386d0
+      initial_z = 0.0202595089d0
+
+      mixing_length_alpha = 1.9446893445d0
+
+      ! surface boundary condition as in the calibration run,
+      ! with gray fallback where the tables run off-grid (late AGB)
+      atm_option = 'table'
+      atm_table = 'photosphere'
+      atm_off_table_option = 'T_tau'
+      atm_T_tau_relation = 'Eddington'
+      atm_T_tau_opacity = 'fixed'
+
+      overshoot_scheme(1) = 'exponential'
+      overshoot_zone_type(1) = 'any'
+      overshoot_zone_loc(1) = 'any'
+      overshoot_bdy_loc(1) = 'any'
+      overshoot_f(1) = 0.0314081331d0
+      overshoot_f0(1) = 0.0314081331d0
+
+      ! atomic diffusion (auto-off when dt < diffusion_dt_limit)
+      do_element_diffusion = .true.
+      do_diffusion_heating = .true.
+      diffusion_dt_limit = 7d11
+      diffusion_calculates_ionization = .true.
+      diffusion_num_classes = 4
+      diffusion_class_representative(1) = 'h1'
+      diffusion_class_representative(2) = 'he4'
+      diffusion_class_representative(3) = 'o16'
+      diffusion_class_representative(4) = 'fe56'
+      diffusion_class_A_max(1) = 2
+      diffusion_class_A_max(2) = 4
+      diffusion_class_A_max(3) = 16
+      diffusion_class_A_max(4) = 10000
+      diffusion_use_isolve = .true.
+      diffusion_rtol_for_isolve = 1d-4
+      diffusion_atol_for_isolve = 1d-5
+      diffusion_maxsteps_for_isolve = 1000
+      diffusion_isolve_solver = 'ros2_solver'
+
+      ! dense output for the animation
+      history_interval = 1
+
+/ ! end of controls namelist

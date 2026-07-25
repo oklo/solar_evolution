@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# Resume the interrupted 1 Msun run: finish phase 3 (RGB -> He flash) from the
+# most recent photo, then run the remaining phases as in rn_solar.
+set -e
+
+do_one() {
+    local inlist_file=$1 model_out=$2 logs_dir=$3
+    echo "=============================================================="
+    echo "PART: ${inlist_file}   ($(date '+%Y-%m-%d %H:%M:%S'))"
+    echo "=============================================================="
+    cp "${inlist_file}" inlist
+    rm -f restart_photo
+    ./star
+    if [ ! -r "${model_out}" ]; then
+        echo "FAILED: ${model_out} was not created by ${inlist_file}"
+        exit 1
+    fi
+    rm -rf "${logs_dir}"
+    mv LOGS "${logs_dir}"
+    echo "finished ${inlist_file}"
+}
+
+# --- resume phase 3 from most recent photo ---
+echo "=============================================================="
+echo "RESUME PART: inlist_to_start_he_core_flash_header   ($(date '+%Y-%m-%d %H:%M:%S'))"
+echo "=============================================================="
+cp inlist_to_start_he_core_flash_header inlist
+photo=$(ls -tp photos | grep -v / | head -1)
+echo "restart from photo ${photo}"
+cp "photos/${photo}" restart_photo
+./star
+if [ ! -r start_he_core_flash.mod ]; then
+    echo "FAILED: start_he_core_flash.mod was not created"
+    exit 1
+fi
+rm -rf LOGS_to_start_he_core_flash
+mv LOGS LOGS_to_start_he_core_flash
+echo "finished inlist_to_start_he_core_flash_header"
+
+# --- remaining phases ---
+do_one inlist_to_end_core_he_burn_header   end_core_he_burn.mod    LOGS_to_end_core_he_burn
+do_one inlist_to_end_agb_header            end_agb.mod             LOGS_to_end_agb
+do_one inlist_to_wd_header                 final.mod               LOGS_to_wd
+
+echo "ALL PARTS FINISHED: the Sun is now a white dwarf. ($(date '+%Y-%m-%d %H:%M:%S'))"

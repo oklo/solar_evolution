@@ -1,0 +1,7 @@
+# Analysis / N-body / animation dependencies (Python 3.11+)
+# The stellar evolution itself is run with MESA + the MESA SDK (see README).
+numpy>=1.26
+scipy>=1.11
+matplotlib>=3.8
+rebound>=4.6
+reboundx>=4.6
